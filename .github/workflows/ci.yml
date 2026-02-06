@@ -1,0 +1,50 @@
+name: CMake CI (ubuntu)
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake
+
+      - name: Configure
+        run: |
+          mkdir -p build
+          cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: |
+          cd build
+          cmake --build . --config Release -- -j
+
+      - name: Run tests
+        run: |
+          cd build
+          ctest --output-on-failure -j
+
+  check-formatting:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run clang-format
+        uses: RafikFarhad/clang-format-github-action@v6
+        with:
+          sources: "include/**/*.hpp,include/**/*.cpp,tests/**/*.cpp,tests/*.cpp"
+          style: file # Uses .clang-format file if present
