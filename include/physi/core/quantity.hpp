@@ -26,12 +26,21 @@
         return QuantityType(v * (to_base_multiplier));                         \
     }
 
+#define PHYSI_UNIT_INCREASE(QuantityType, unit_name, to_base_multiplier,       \
+                            base_increase)                                     \
+    constexpr double unit_name() const {                                       \
+        return this->value_ / (to_base_multiplier) - base_increase;            \
+    }                                                                          \
+    static constexpr QuantityType unit_name(double v) {                        \
+        return QuantityType((v + base_increase) * (to_base_multiplier));       \
+    }
+
 #define PHYSI_LITERAL(QuantityType, unit_name)                                 \
     constexpr QuantityType operator""_##unit_name(long double v) {             \
-        return QuantityType::unit_name(static_cast<double>(v));                \
+        return QuantityType::unit_name(v);                                     \
     }                                                                          \
     constexpr QuantityType operator""_##unit_name(unsigned long long v) {      \
-        return QuantityType::unit_name(static_cast<double>(v));                \
+        return QuantityType::unit_name(static_cast<long double>(v));           \
     }
 
 namespace physi {
@@ -75,7 +84,6 @@ struct quantity {
 
     // accessors
     [[nodiscard]] constexpr T base_value() const noexcept { return value_; }
-    [[nodiscard]] constexpr T value() const noexcept { return value_; }
 
     // unary
     [[nodiscard]] constexpr derived_t operator+() const noexcept {
