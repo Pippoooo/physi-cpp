@@ -84,3 +84,37 @@ TEST_CASE("Arithmetic & compound assignments across precisions") {
         b / a; // quantity / quantity -> scalar (double/float -> double)
     REQUIRE(ratio == Catch::Approx(2.25 / 1.5).epsilon(1e-6));
 }
+
+TEST_CASE("Temperature conversions") {
+
+    temperature_f t1 = 100.0_K;
+    REQUIRE(t1.K() == Catch::Approx(100.0));
+
+    // Water freezing point: 0°C = 273.15 K
+    temperature_f t2 = temperature_f::C(0);
+    REQUIRE(t2.K() == Catch::Approx(273.15));
+
+    // Water boiling point: 100°C = 373.15 K
+    temperature_f t3 = temperature_f::C(100);
+    REQUIRE(t3.K() == Catch::Approx(373.15));
+
+    // Absolute zero: -273.15°C = 0 K
+    temperature_f t4 = temperature_f::C(-273.15);
+    REQUIRE(t4.K() == Catch::Approx(0.0).margin(0.01));
+
+    // Water freezing point: 32°F = 273.15 K
+    temperature_f t5 = temperature_f::F(32);
+    REQUIRE(t5.K() == Catch::Approx(273.15));
+
+    // Water boiling point: 212°F = 373.15 K
+    temperature_f t6 = temperature_f::F(212);
+    REQUIRE(t6.K() == Catch::Approx(373.15));
+
+    // Absolute zero: -459.67°F = 0 K
+    temperature_f t7 = temperature_f::F(-459.67);
+    REQUIRE(t7.K() == Catch::Approx(0.0).margin(0.01));
+
+    // Room temperature: 68°F ≈ 293.15 K (20°C)
+    temperature_f t8 = temperature_f::F(68);
+    REQUIRE(t8.K() == Catch::Approx(293.15).margin(0.1));
+}
