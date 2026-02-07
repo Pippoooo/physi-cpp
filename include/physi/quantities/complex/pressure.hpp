@@ -1,6 +1,8 @@
 #pragma once
 
 #include "../../core/quantity.hpp"
+#include "area.hpp"
+#include "force.hpp"
 
 namespace physi {
 
@@ -31,5 +33,7 @@ PHYSI_LITERAL(pressure_ld, torr)
 PHYSI_LITERAL(pressure_ld, mmHg)
 
 } // namespace literals
+
+PHYSI_BINARY_OP(pressure, force, DIV, area)
 
 } // namespace physi

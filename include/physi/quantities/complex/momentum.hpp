@@ -2,6 +2,8 @@
 
 #include "../../core/quantity.hpp"
 #include "../mass.hpp"
+#include "../time.hpp"
+#include "force.hpp"
 #include "speed.hpp"
 
 namespace physi {
@@ -25,5 +27,6 @@ PHYSI_LITERAL(momentum_ld, lb_ft_per_s)
 } // namespace literals
 
 PHYSI_BINARY_OP(momentum, mass, MUL, speed)
+PHYSI_BINARY_OP(momentum, force, MUL, time)
 
 } // namespace physi

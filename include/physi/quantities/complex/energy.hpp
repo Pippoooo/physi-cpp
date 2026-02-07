@@ -2,7 +2,11 @@
 
 #include "../../core/quantity.hpp"
 #include "../length.hpp"
+#include "../time.hpp"
+#include "electric_charge.hpp"
 #include "force.hpp"
+#include "power.hpp"
+#include "voltage.hpp"
 
 namespace physi {
 
@@ -40,5 +44,7 @@ PHYSI_LITERAL(energy_ld, BTU)
 } // namespace literals
 
 PHYSI_BINARY_OP(energy, force, MUL, length)
+PHYSI_BINARY_OP(energy, power, MUL, time)
+PHYSI_BINARY_OP(energy, voltage, MUL, electric_charge)
 
 } // namespace physi

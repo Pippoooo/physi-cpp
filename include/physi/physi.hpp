@@ -10,9 +10,17 @@
 
 // complex quantities
 #include "quantities/complex/accelleration.hpp"
+#include "quantities/complex/area.hpp"
+#include "quantities/complex/capacitance.hpp"
+#include "quantities/complex/density.hpp"
+#include "quantities/complex/electric_charge.hpp"
 #include "quantities/complex/energy.hpp"
 #include "quantities/complex/force.hpp"
+#include "quantities/complex/moment_of_inertia.hpp"
 #include "quantities/complex/momentum.hpp"
 #include "quantities/complex/power.hpp"
 #include "quantities/complex/pressure.hpp"
+#include "quantities/complex/resistance.hpp"
 #include "quantities/complex/speed.hpp"
+#include "quantities/complex/voltage.hpp"
+#include "quantities/complex/volume.hpp"
