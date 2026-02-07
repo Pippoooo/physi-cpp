@@ -10,7 +10,7 @@ int main() {
     float l_ft = l_m.ft(); // convert to feet (float)
 
     float c = 100.0f;
-    length_d l_ft2 = length_d::ft(c); // 100 ft as double
+    length_d l_ft2 = length<>::ft(c); // 100 ft as double
     length_d l_ft3 = l_m;             // implicit float->double conversion
 
     mass_f m1 = 20_oz; // mass literal (ounces)
@@ -21,7 +21,7 @@ int main() {
     time_f t = 10_s;
 
     speed_f s = 10_m / 10_s; // automatic unit conversion with operations.
-    s.km_h();
+    float sss = s.km_h();
 
     // inverse operations work too!
     length_f travel = s * 10_s;

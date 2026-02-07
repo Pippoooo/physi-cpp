@@ -20,19 +20,19 @@
     using Name##_ld = Name<long double>;
 
 #define PHYSI_UNIT(QuantityType, unit_name, to_base_multiplier)                \
-    constexpr double unit_name() const {                                       \
+    [[nodiscard]] constexpr T unit_name() const {                              \
         return this->value_ / (to_base_multiplier);                            \
     }                                                                          \
-    static constexpr QuantityType unit_name(double v) {                        \
+    [[nodiscard]] static constexpr QuantityType unit_name(T v) {               \
         return QuantityType(v * (to_base_multiplier));                         \
     }
 
 #define PHYSI_UNIT_INCREASE(QuantityType, unit_name, to_base_multiplier,       \
                             base_increase)                                     \
-    constexpr double unit_name() const {                                       \
+    [[nodiscard]] constexpr T unit_name() const {                              \
         return this->value_ / (to_base_multiplier) - base_increase;            \
     }                                                                          \
-    static constexpr QuantityType unit_name(double v) {                        \
+    [[nodiscard]] static constexpr QuantityType unit_name(T v) {               \
         return QuantityType((v + base_increase) * (to_base_multiplier));       \
     }
 
