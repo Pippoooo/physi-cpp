@@ -6,7 +6,8 @@
 
 #define PHYSI_QUANTITY_BEGIN(Name)                                             \
     template <typename T = double> struct Name : quantity<Name, T> {           \
-        using quantity<Name, T>::quantity;                                     \
+        using base = quantity<Name, T>;                                        \
+        using base::base;                                                      \
                                                                                \
       public:
 
@@ -42,6 +43,43 @@
     constexpr QuantityType operator""_##unit_name(unsigned long long v) {      \
         return QuantityType::unit_name(static_cast<long double>(v));           \
     }
+
+// single internal macro that emits one operator overload (no duplication)
+#define PHYSI_BINARY_OP_DEF(ResultType, LeftType, Op, RightType)               \
+    template <typename U, typename N>                                          \
+    [[nodiscard]] constexpr ResultType<std::common_type_t<U, N>> operator Op(  \
+        const LeftType<U> &lhs, const RightType<N> &rhs) noexcept {            \
+        using R = std::common_type_t<U, N>;                                    \
+        return ResultType<R>(static_cast<R>(lhs.base_value())                  \
+                                 Op static_cast<R>(rhs.base_value()));         \
+    }
+
+// Specific expansions for each algebraic operator (forward + 2 inverses)
+#define PHYSI_BINARY_OP_DIV(ResultType, LeftType, RightType)                   \
+    PHYSI_BINARY_OP_DEF(ResultType, LeftType, /,                               \
+                        RightType) /* forward: Left / Right -> Result */       \
+    PHYSI_BINARY_OP_DEF(LeftType, ResultType, *,                               \
+                        RightType) /* inverse: Result * Right -> Left */       \
+    PHYSI_BINARY_OP_DEF(RightType, LeftType, /,                                \
+                        ResultType) /* inverse: Left / Result -> Right */
+
+#define PHYSI_BINARY_OP_MUL(ResultType, LeftType, RightType)                   \
+    PHYSI_BINARY_OP_DEF(ResultType, LeftType, *,                               \
+                        RightType) /* forward: Left * Right -> Result */       \
+    PHYSI_BINARY_OP_DEF(LeftType, ResultType, /,                               \
+                        RightType) /* inverse: Result / Right -> Left */       \
+    PHYSI_BINARY_OP_DEF(RightType, ResultType, /,                              \
+                        LeftType) /* inverse: Result / Left -> Right */
+
+#define PHYSI_BINARY_OP_DISPATCH(OpKeyword, ResultType, LeftType, RightType)   \
+    PHYSI_BINARY_OP_##OpKeyword(ResultType, LeftType, RightType)
+
+// Dispatcher wrapper: call like PHYSI_BINARY_OP(Result, Left, DIV, Right)
+#define PHYSI_BINARY_OP(ResultType, LeftType, OpKeyword, RightType)            \
+    PHYSI_BINARY_OP_DISPATCH(OpKeyword, ResultType, LeftType, RightType)
+
+#define DIV DIV
+#define MUL MUL
 
 namespace physi {
 
