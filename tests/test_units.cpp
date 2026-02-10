@@ -711,3 +711,88 @@ TEST_CASE("Physics simulation examples") {
         REQUIRE(kinetic_energy.base_value() == Approx(500.0f));
     }
 }
+
+TEST_CASE("Vector edge cases") {
+
+    SECTION("Magnitude with negative components") {
+        vec3<length_f> v = {-3_m, -4_m, 0_m};
+        length_f mag = v.length();
+
+        REQUIRE(mag.base_value() == Approx(5.0f)); // Should be positive
+    }
+
+    SECTION("Magnitude with all negative components") {
+        vec3<speed_f> v = {-5_m_s, -12_m_s, 0_m_s};
+        speed_f mag = v.length();
+
+        REQUIRE(mag.base_value() == Approx(13.0f)); // Should be positive
+    }
+
+    SECTION("Distance between identical points") {
+        vec3<length_f> a = {1_m, 2_m, 3_m};
+        length_f dist = a.distance(a);
+
+        REQUIRE(dist.base_value() == Approx(0.0f));
+    }
+
+    SECTION("Zero magnitude squared") {
+        vec3<length_f> zero = {0_m, 0_m, 0_m};
+        area_f mag_sq = zero.magnitude_squared();
+
+        REQUIRE(mag_sq.base_value() == Approx(0.0f));
+    }
+}
+
+TEST_CASE("Vector mathematical properties") {
+
+    SECTION("Cross product anti-commutativity: a × b = -(b × a)") {
+        vec3<length_f> a = {1_m, 2_m, 3_m};
+        vec3<length_f> b = {4_m, 5_m, 6_m};
+        vec3<area_f> cross1 = a.cross(b);
+        vec3<area_f> cross2 = b.cross(a);
+
+        REQUIRE(cross1.x().base_value() == Approx(-cross2.x().base_value()));
+        REQUIRE(cross1.y().base_value() == Approx(-cross2.y().base_value()));
+        REQUIRE(cross1.z().base_value() == Approx(-cross2.z().base_value()));
+    }
+
+    SECTION("Dot product commutativity: a · b = b · a") {
+        vec3<length_f> a = {1_m, 2_m, 3_m};
+        vec3<length_f> b = {4_m, 5_m, 6_m};
+        area_f dot1 = a.dot(b);
+        area_f dot2 = b.dot(a);
+
+        REQUIRE(dot1.base_value() == Approx(dot2.base_value()));
+    }
+
+    SECTION("Cross product with itself is zero") {
+        vec3<length_f> a = {1_m, 2_m, 3_m};
+        vec3<area_f> result = a.cross(a);
+
+        REQUIRE(result.x().base_value() == Approx(0.0f));
+        REQUIRE(result.y().base_value() == Approx(0.0f));
+        REQUIRE(result.z().base_value() == Approx(0.0f));
+    }
+
+    SECTION("Distributive property: a · (b + c) = a · b + a · c") {
+        vec3<length_f> a = {1_m, 2_m, 3_m};
+        vec3<length_f> b = {4_m, 5_m, 6_m};
+        vec3<length_f> c = {7_m, 8_m, 9_m};
+
+        area_f left = a.dot(b + c);
+        area_f right = a.dot(b) + a.dot(c);
+
+        REQUIRE(left.base_value() == Approx(right.base_value()));
+    }
+
+    SECTION("Scalar multiplication distributive: (ka) · b = k(a · b)") {
+        vec3<length_f> a = {1_m, 2_m, 3_m};
+        vec3<length_f> b = {4_m, 5_m, 6_m};
+        float k = 2.0f;
+
+        area_f left = (a * k).dot(b);
+        area_f right = (a.dot(b)) * k;
+
+        REQUIRE(left.base_value() == Approx(right.base_value()));
+    }
+}
