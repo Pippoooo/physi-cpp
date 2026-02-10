@@ -1,147 +1,194 @@
-# physi — minimal header-only units library
+# physi — minimal header-only units & vectors library
 
-This repository is a small header-only C++ library providing physics unit types and literals. It includes tests using Catch2 + CTest.
+A compact, header-only C++ library providing strongly-typed physics quantities (length, mass, time, force, energy, …), user-friendly unit literals, safe mixed-precision arithmetic, and small `vec2`/`vec3` containers that interoperate with `glm::vec*`. Zero-overhead, compile-time dimensional checks and expressive, natural syntax.
 
-## Features
+---
 
-- **Strong Typing:** Distinct types for Length, Mass, Speed, Acceleration, Force, Energy, etc.
-- **Precision Control:** Explicit aliases for `float` (`_f`), `double` (`_d`), and `long double` (`_ld`) representations.
-- **User-Defined Literals:** Intuitive syntax like `2.0_m`, `20_oz`, `100_km_h`.
-- **Mixed-Precision Arithmetic:** Seamlessly add `float` quantities to `double` quantities with correct type promotion.
-- **Dimensional Analysis:** Derive complex quantities from basic ones (e.g., `speed = length / time`).
-- **Zero-Overhead:** Compile-time dimensional analysis and static type checking.
+## Table of contents
 
-## Usage
+- [Why physi](#why-physi)
+- [Quick start](#quick-start)
+- [Core concepts & most useful features (ordered)](#core-concepts--most-useful-features-ordered)
+  - [1. Literals and factories (fast to use)](#1-literals-and-factories-fast-to-use)
+  - [2. Dimensional arithmetic & inverses (safety + convenience)](#2-dimensional-arithmetic--inverses-safety--convenience)
+  - [3. Mixed-precision & type promotion (no surprises)](#3-mixed-precision--type-promotion-no-surprises)
+  - [4. Conversions and named accessors (human-friendly)](#4-conversions-and-named-accessors-human-friendly)
+  - [5. `vec2` / `vec3` (small vector types with physics units)](#5-vec2--vec3-small-vector-types-with-physics-units)
 
-### Basic Literals and Conversions
+- [Building, testing, installing](#building-testing-installing)
+- [API reference (quick)](#api-reference-quick)
 
-Initialize quantities using SI literals or static factory methods. Access converted values using named member functions.
+---
 
-```cpp
-#include "physi/physi.hpp"
+## Why physi
 
-void example() {
-    // Initialize using literals (float precision)
-    length_f l_m = 2.0_m;
+- Gives compile-time dimensional checks so you can’t accidentally add incompatible units.
+- Expressive literals like `2.0_m`, `100_km_h`, `20_oz`.
+- Header-only — drop into a project easily.
+- Small `vec` helpers so your physical vectors carry units (no spreadsheet of scalars!).
+- Works with `glm` for low-level vector math (raw access & conversions).
 
-    // Convert to feet
-    float l_ft = l_m.ft(); // Returns approx 6.56168
+---
 
-    // Initialize using static factory (double precision)
-    length_d l_ft2 = length_d::ft(100.0);
+## Quick start
 
-    // Convert to meters
-    double meters = l_ft2.m(); // Returns 30.48
+Add the repository to your project (one of the options below).
 
-    // Mass examples
-    mass_f m1 = 20_oz;
-    float pounds = m1.lb(); // Returns 1.25
-}
+**As a local dependency**
+
+```cmake
+add_subdirectory(path/to/physi)
+target_link_libraries(myapp PRIVATE physi::physi)
 ```
 
-### Implicit Promotions and Type Safety
+**If installed system-wide**
 
-The library handles implicit conversions safely. You can assign lower-precision quantities to higher-precision variables, but not vice versa without explicit casting.
-
-```cpp
-length_f l_float = 2.0_m;
-length_d l_double = l_float; // OK: Implicit float -> double conversion
+```cmake
+find_package(physi CONFIG REQUIRED)
+target_link_libraries(myapp PRIVATE physi::physi)
 ```
 
-### Arithmetic and Compound Assignment
+`physi` is header-only; linking the interface target is enough. The project bundles GLM headers (so downstream users don’t need to preinstall GLM).
 
-Perform arithmetic operations on quantities. The result type automatically promotes to the highest precision involved in the operation.
+---
 
-```cpp
-length_f a = 1.5_m;
-length_d b = 2.25_m;
-length_ld c = 3.75_m;
+## Core concepts & most useful features (ordered)
 
-// Mixed addition: float + double -> double
-auto sum_ab = a + b;
-// sum_ab is length_d (3.75 m)
+### 1. Literals and factories (fast to use)
 
-// Mixed addition: float + double + long double -> long double
-auto sum_abc = a + b + c;
-// sum_abc is length_ld
-```
-
-### Scalar Operations
-
-Multiply or divide quantities by scalars, or divide two quantities to result in a raw scalar ratio.
+Create quantities with UDLs or static factories.
 
 ```cpp
-length_f x = 1.5_m;
-length_d y = 2.25_m;
+using namespace physi;
+using namespace physi::literals;
 
-// Scalar multiplication
-auto scaled1 = 2.0 * x; // 3.0 m
-auto scaled2 = y * 0.5; // 1.125 m
-
-// Ratio (Quantity / Quantity -> Scalar)
-double ratio = y / x; // 1.5
+length_f d = 2.0_m;         // 2 meters (float alias)
+time_f   t = 10_s;          // 10 seconds
+mass_f   m = 20_oz;         // ounces -> mass
+length_d d2 = length_d::ft(100.0); // 100 ft as double
 ```
 
-### Derived Quantities
+### 2. Dimensional arithmetic & inverses (safety + convenience)
 
-Combine basic quantities to create derived quantities like speed, acceleration, force, and energy using natural operators.
+Operators are dimension-aware:
 
 ```cpp
-// Speed from distance and time
-speed_f s1 = 100_m / 10_s;        // 10 m/s
-float km_per_h = s1.km_h();       // 36 km/h
-
-// Acceleration from speed and time
-acceleration_f a1 = s1 / 5_s;     // 2 m/s²
-
-// Acceleration from distance and time directly
-acceleration_f a2 = 100_m / 10_s / 10_s;  // 1 m/s²
-
-// Mixed units
-acceleration_f a3 = 36_km_h / 10_s;       // 1 m/s²
-
-// Force from mass and acceleration
-force_f f = 10_kg * a1;           // 20 N
-
-// Energy from force and distance
-energy_f e = f * 5_m;             // 100 J
+speed_f v = 100_m / 10_s;   // length / time -> speed
+length_f traveled = v * 10_s; // speed * time -> length
+time_f   travel_time = 100_m / v; // length / speed -> time
 ```
 
-### Unit Conversions
+(Algebraic inverses are provided so `a/b -> c` implies overloads for `c*b -> a` and `a/c -> b` when meaningful.)
 
-All quantities support conversion between compatible units.
+### 3. Mixed-precision & type promotion (no surprises)
+
+Operations promote with `std::common_type` semantics:
 
 ```cpp
-// Speed conversions
-speed_f v = 60_mi / 1_hr;
-float kmh = v.km_h();             // ~96.56 km/h
-float ms = v.m_s();               // ~26.82 m/s
-
-// Acceleration conversions
-acceleration_f a = 100_cm_s2;
-float m_s2 = a.m_s2();            // 1.0 m/s²
-
-// Energy conversions
-energy_f e = 1_kWh;
-float joules = e.J();             // 3,600,000 J
-float kcal = e.kcal();            // ~860 kcal
+length_f  f = 1.5_m;   // float
+length_d  d = 2.25_m;  // double
+auto sum = f + d;      // promoted to length_d (double)
 ```
 
-### Real-World Examples
+Assignments to higher precision are implicit; narrowing requires an explicit cast.
+
+### 4. Conversions and named accessors (human-friendly)
+
+Every quantity exposes easy conversion helpers:
 
 ```cpp
-// Car acceleration: 0 to 100 km/h in 8 seconds
-speed_f final_speed = 100_km_h;
-time_f time = 8_s;
-acceleration_f accel = final_speed / time;  // ~0.35 g
-
-// Kinetic energy calculation
-mass_f car_mass = 1500_kg;
-speed_f car_speed = 100_km_h;
-energy_f kinetic = 0.5 * car_mass * car_speed * car_speed;
-
-// Power consumption
-energy_f consumed = 2.5_kWh;
-time_f duration = 1_hr;
-power_f avg_power = consumed / duration;  // 2.5 kW
+float feet = d.ft();       // meters -> feet (float)
+double meters = d2.m();    // double result
+float kmh = (100_km / 1_hr).km_h();
 ```
+
+### 5. `vec2` / `vec3` (small vector types with physics units)
+
+Vectors carry units on each component and support vector ops, dot/cross, magnitude, normalization, and raw `glm` interoperability.
+
+```cpp
+vec3<length_f> pos = {1_m, 2_m, 3_m};
+vec3<speed_f> vel = {5_m_s, 10_m_s, 0_m_s};
+
+vec3<length_f> newpos = pos + vel * 0.1_s; // vector arithmetic with units
+
+// dot/cross
+area_f area = vec3<length_f>{3_m,0,0}.dot(vec3<length_f>{0,4_m,0});
+vec3<area_f> torque = vec3<length_f>{1_m,0,0}.cross(vec3<force_f>{0,10_N,0});
+
+// raw glm interoperability:
+glm::vec3 raw = pos.base_value();   // glm::vec3 of base (floating) values
+const float *ptr = pos.data_ptr();
+```
+
+---
+
+## Building, testing, installing
+
+This project uses CMake + Catch2 + CTest. The repository bundles a `examples/` and `tests/` folder.
+
+```bash
+mkdir build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Debug
+cmake --build .
+ctest --output-on-failure
+```
+
+If you are using `FetchContent` for dependencies (e.g., GLM), the top-level CMake file already fetches what is needed; the install step copies GLM headers into the install include dir so consumers need not preinstall them.
+
+---
+
+## API reference (quick)
+
+> Note: this is a compact reference — the code headers contain fuller docs and unit tests demonstrate many more combinations.
+
+### Quantity types
+
+Type aliases are provided for common precisions:
+
+- `length_f`, `length_d`, `length_ld`
+- `time_f`, `time_d`, `time_ld`
+- `mass_f`, `force_f`, `energy_f`, `power_f`, `speed_f`, `acceleration_f`, `area_f`, `volume_f`, …
+
+### Literal syntax
+
+- `2.0_m`, `10_s`, `100_km`, `60_mi`, `20_oz`, `1_kWh`, `100_km_h`, `1_m_s2`, etc.
+
+### Conversions
+
+Member functions return values in chosen units:
+
+- `l.m()`, `l.ft()`, `s.km_h()`, `e.J()`, `e.kcal()`, `a.m_s2()`, …
+
+### Arithmetic & semantics
+
+- `length / time -> speed`
+- `speed * time -> length`
+- `length / speed -> time`
+- `mass * acceleration -> force`
+- `force * length -> energy`
+- Mixed-precision math uses `std::common_type` for result precision.
+- `Quantity / Quantity` can return a plain scalar ratio (built-in type).
+
+### `vec2<T>` / `vec3<T>`
+
+- Constructors: default, component-wise, broadcast, initializer-list.
+- Component accessors: `.x()`, `.y()`, `.z()` return quantity references.
+- Arithmetic: `+`, `-`, component-wise `*` (Hadamard), component-wise `/`.
+- Compound assignment: `+=`, `-=`, `*=`, `/=` with scalars and vectors.
+- Dot product: `a.dot(b)` producing a derived quantity.
+- Cross product: `a.cross(b)` (3D only) producing oriented-area quantities.
+- Magnitude/normalize: `.length()`, `.magnitude_squared()`, `.normalized()` (returns unitless direction vector).
+- Raw access: `.base_value()` returns `glm::vec*` of the stored base values; `.data_ptr()` gives pointer to raw scalar array.
+
+---
+
+## Tests & stability
+
+Tests are implemented with Catch2 in `tests/` and run via CTest. Example tests show coverage for:
+
+- UDL and factory correctness
+- Conversions & tolerances
+- Mixed-precision arithmetic
+- Vector ops, dot/cross, magnitude
+- Derived-quantity correctness (force, energy, acceleration, etc.)
