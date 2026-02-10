@@ -24,3 +24,6 @@
 #include "quantities/complex/speed.hpp"
 #include "quantities/complex/voltage.hpp"
 #include "quantities/complex/volume.hpp"
+
+//
+#include "vec/vec.hpp"

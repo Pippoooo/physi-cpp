@@ -104,7 +104,7 @@ struct quantity {
     using derived_t = Derived<T>;
 
     // default / copy / move
-    constexpr quantity() noexcept = delete;
+    constexpr quantity() noexcept = default;
     constexpr quantity(const quantity &) noexcept = default;
     constexpr quantity(quantity &&) noexcept = default;
     ~quantity() noexcept = default;
