@@ -1,13 +1,31 @@
 cmake_minimum_required(VERSION 3.16)
 project(physi VERSION 0.1.0 LANGUAGES CXX)
 
-
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 
+
+include(FetchContent)
+
+FetchContent_Declare(
+	glm
+	GIT_REPOSITORY https://github.com/g-truc/glm.git
+	GIT_TAG 1.0.3
+)
+FetchContent_MakeAvailable(glm)
+
+
+
 add_library(physi INTERFACE)
+
+target_include_directories(physi INTERFACE
+  $<BUILD_INTERFACE:${glm_SOURCE_DIR}>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+install(DIRECTORY "${glm_SOURCE_DIR}/glm" DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+
 target_include_directories(physi INTERFACE
 $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 $<INSTALL_INTERFACE:include>
@@ -15,13 +33,16 @@ $<INSTALL_INTERFACE:include>
 target_compile_features(physi INTERFACE cxx_constexpr)
 
 
+
 add_executable(example_app examples/minimal_example.cpp)
 target_link_libraries(example_app PRIVATE physi)
 set_target_properties(example_app PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 
+
 include(CTest)
 add_subdirectory(tests)
+
 
 
 include(GNUInstallDirs)
