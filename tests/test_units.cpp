@@ -210,3 +210,504 @@ TEST_CASE("Speed and acceleration combined") {
         REQUIRE(a.km_s2() == Approx(0.0027778f).margin(0.00001f));
     }
 }
+
+using namespace physi;
+using namespace physi::literals;
+
+TEST_CASE("Vector construction") {
+
+    SECTION("Default constructor") {
+        vec3<length_f> v;
+        REQUIRE(v.x().base_value() == Approx(0.0f));
+        REQUIRE(v.y().base_value() == Approx(0.0f));
+        REQUIRE(v.z().base_value() == Approx(0.0f));
+    }
+
+    SECTION("Component constructor") {
+        vec3<length_f> v(10_m, 20_m, 30_m);
+        REQUIRE(v.x().base_value() == Approx(10.0f));
+        REQUIRE(v.y().base_value() == Approx(20.0f));
+        REQUIRE(v.z().base_value() == Approx(30.0f));
+    }
+
+    SECTION("Initializer list constructor") {
+        vec3<length_f> v = {1_m, 2_m, 3_m};
+        REQUIRE(v.x().base_value() == Approx(1.0f));
+        REQUIRE(v.y().base_value() == Approx(2.0f));
+        REQUIRE(v.z().base_value() == Approx(3.0f));
+    }
+
+    SECTION("Broadcast constructor") {
+        vec3<length_f> v(5_m);
+        REQUIRE(v.x().base_value() == Approx(5.0f));
+        REQUIRE(v.y().base_value() == Approx(5.0f));
+        REQUIRE(v.z().base_value() == Approx(5.0f));
+    }
+
+    SECTION("2D vector") {
+        vec2<speed_f> v(10_m_s, 20_m_s);
+        REQUIRE(v.x().base_value() == Approx(10.0f));
+        REQUIRE(v.y().base_value() == Approx(20.0f));
+    }
+}
+
+TEST_CASE("Vector addition and subtraction") {
+
+    SECTION("Addition") {
+        vec3<length_f> a = {1_m, 2_m, 3_m};
+        vec3<length_f> b = {4_m, 5_m, 6_m};
+        vec3<length_f> sum = a + b;
+
+        REQUIRE(sum.x().base_value() == Approx(5.0f));
+        REQUIRE(sum.y().base_value() == Approx(7.0f));
+        REQUIRE(sum.z().base_value() == Approx(9.0f));
+    }
+
+    SECTION("Subtraction") {
+        vec3<length_f> a = {1_m, 2_m, 3_m};
+        vec3<length_f> b = {4_m, 5_m, 6_m};
+        vec3<length_f> diff = a - b;
+
+        REQUIRE(diff.x().base_value() == Approx(-3.0f));
+        REQUIRE(diff.y().base_value() == Approx(-3.0f));
+        REQUIRE(diff.z().base_value() == Approx(-3.0f));
+    }
+
+    SECTION("Compound addition") {
+        vec3<length_f> a = {1_m, 2_m, 3_m};
+        vec3<length_f> b = {4_m, 5_m, 6_m};
+        a += b;
+
+        REQUIRE(a.x().base_value() == Approx(5.0f));
+        REQUIRE(a.y().base_value() == Approx(7.0f));
+        REQUIRE(a.z().base_value() == Approx(9.0f));
+    }
+
+    SECTION("Compound subtraction") {
+        vec3<length_f> a = {1_m, 2_m, 3_m};
+        vec3<length_f> b = {4_m, 5_m, 6_m};
+        a -= b;
+
+        REQUIRE(a.x().base_value() == Approx(-3.0f));
+        REQUIRE(a.y().base_value() == Approx(-3.0f));
+        REQUIRE(a.z().base_value() == Approx(-3.0f));
+    }
+}
+
+TEST_CASE("Vector unary operators") {
+
+    SECTION("Unary plus") {
+        vec3<length_f> a = {1_m, 2_m, 3_m};
+        vec3<length_f> result = +a;
+
+        REQUIRE(result.x().base_value() == Approx(1.0f));
+        REQUIRE(result.y().base_value() == Approx(2.0f));
+        REQUIRE(result.z().base_value() == Approx(3.0f));
+    }
+
+    SECTION("Unary minus") {
+        vec3<length_f> a = {1_m, 2_m, 3_m};
+        vec3<length_f> result = -a;
+
+        REQUIRE(result.x().base_value() == Approx(-1.0f));
+        REQUIRE(result.y().base_value() == Approx(-2.0f));
+        REQUIRE(result.z().base_value() == Approx(-3.0f));
+    }
+}
+
+TEST_CASE("Vector scalar multiplication and division") {
+
+    SECTION("Multiply by scalar") {
+        vec3<length_f> a = {1_m, 2_m, 3_m};
+        vec3<length_f> scaled = a * 2.0f;
+
+        REQUIRE(scaled.x().base_value() == Approx(2.0f));
+        REQUIRE(scaled.y().base_value() == Approx(4.0f));
+        REQUIRE(scaled.z().base_value() == Approx(6.0f));
+    }
+
+    SECTION("Scalar multiply (commutative)") {
+        vec3<length_f> a = {1_m, 2_m, 3_m};
+        vec3<length_f> scaled = 2.0f * a;
+
+        REQUIRE(scaled.x().base_value() == Approx(2.0f));
+        REQUIRE(scaled.y().base_value() == Approx(4.0f));
+        REQUIRE(scaled.z().base_value() == Approx(6.0f));
+    }
+
+    SECTION("Divide by scalar") {
+        vec3<length_f> a = {2_m, 4_m, 6_m};
+        vec3<length_f> half = a / 2.0f;
+
+        REQUIRE(half.x().base_value() == Approx(1.0f));
+        REQUIRE(half.y().base_value() == Approx(2.0f));
+        REQUIRE(half.z().base_value() == Approx(3.0f));
+    }
+
+    SECTION("Compound multiply") {
+        vec3<length_f> a = {1_m, 2_m, 3_m};
+        a *= 3.0f;
+
+        REQUIRE(a.x().base_value() == Approx(3.0f));
+        REQUIRE(a.y().base_value() == Approx(6.0f));
+        REQUIRE(a.z().base_value() == Approx(9.0f));
+    }
+
+    SECTION("Compound divide") {
+        vec3<length_f> a = {6_m, 9_m, 12_m};
+        a /= 3.0f;
+
+        REQUIRE(a.x().base_value() == Approx(2.0f));
+        REQUIRE(a.y().base_value() == Approx(3.0f));
+        REQUIRE(a.z().base_value() == Approx(4.0f));
+    }
+}
+
+TEST_CASE("Vector dimensional operations") {
+
+    SECTION("Divide by time to get velocity") {
+        vec3<length_f> a = {10_m, 20_m, 30_m};
+        time_f t = 2_s;
+        vec3<speed_f> velocity = a / t;
+
+        REQUIRE(velocity.x().base_value() == Approx(5.0f));
+        REQUIRE(velocity.y().base_value() == Approx(10.0f));
+        REQUIRE(velocity.z().base_value() == Approx(15.0f));
+    }
+
+    SECTION("Multiply velocity by time to get displacement") {
+        vec3<speed_f> velocity = {5_m_s, 10_m_s, 15_m_s};
+        time_f t = 2_s;
+        vec3<length_f> displacement = velocity * t;
+
+        REQUIRE(displacement.x().base_value() == Approx(10.0f));
+        REQUIRE(displacement.y().base_value() == Approx(20.0f));
+        REQUIRE(displacement.z().base_value() == Approx(30.0f));
+    }
+
+    SECTION("Time multiply velocity (commutative)") {
+        vec3<speed_f> velocity = {5_m_s, 10_m_s, 15_m_s};
+        time_f t = 2_s;
+        vec3<length_f> displacement = velocity * t;
+
+        REQUIRE(displacement.x().base_value() == Approx(10.0f));
+        REQUIRE(displacement.y().base_value() == Approx(20.0f));
+        REQUIRE(displacement.z().base_value() == Approx(30.0f));
+    }
+
+    SECTION("Force times distance equals work") {
+        vec3<force_f> force = {10_N, 0_N, 0_N};
+        length_f distance = 5_m;
+        vec3<energy_f> work_vec = force * distance;
+
+        REQUIRE(work_vec.x().base_value() == Approx(50.0f));
+        REQUIRE(work_vec.y().base_value() == Approx(0.0f));
+        REQUIRE(work_vec.z().base_value() == Approx(0.0f));
+    }
+}
+
+TEST_CASE("Vector dot product") {
+
+    SECTION("Work = Force · displacement") {
+        vec3<force_f> F = {10_N, 0_N, 0_N};
+        vec3<length_f> displacement = {5_m, 0_m, 0_m};
+        energy_f work = F.dot(displacement);
+
+        REQUIRE(work.base_value() == Approx(50.0f));
+    }
+
+    SECTION("Same direction vectors") {
+        vec3<length_f> a = {3_m, 0_m, 0_m};
+        vec3<length_f> b = {4_m, 0_m, 0_m};
+        area_f result = a.dot(b);
+
+        REQUIRE(result.base_value() == Approx(12.0f));
+    }
+
+    SECTION("Perpendicular vectors") {
+        vec3<length_f> a = {1_m, 0_m, 0_m};
+        vec3<length_f> b = {0_m, 1_m, 0_m};
+        area_f result = a.dot(b);
+
+        REQUIRE(result.base_value() == Approx(0.0f));
+    }
+
+    SECTION("General dot product") {
+        vec3<length_f> a = {1_m, 2_m, 3_m};
+        vec3<length_f> b = {4_m, 5_m, 6_m};
+        area_f result = a.dot(b);
+
+        // 1*4 + 2*5 + 3*6 = 4 + 10 + 18 = 32
+        REQUIRE(result.base_value() == Approx(32.0f));
+    }
+}
+
+TEST_CASE("Vector cross product") {
+
+    SECTION("Area from perpendicular sides") {
+        vec3<length_f> side_a = {3_m, 0_m, 0_m};
+        vec3<length_f> side_b = {0_m, 4_m, 0_m};
+        vec3<area_f> area_vec = side_a.cross(side_b);
+
+        REQUIRE(area_vec.x().base_value() == Approx(0.0f));
+        REQUIRE(area_vec.y().base_value() == Approx(0.0f));
+        REQUIRE(area_vec.z().base_value() == Approx(12.0f));
+    }
+
+    SECTION("Torque = r × F") {
+        vec3<length_f> side_a = {1_m, 0_m, 0_m};
+        vec3<length_f> side_b = {0_m, 10_m, 0_m};
+        vec3<area_f> area_vec = side_a.cross(side_b);
+
+        REQUIRE(area_vec.x().base_value() == Approx(0.0f));
+        REQUIRE(area_vec.y().base_value() == Approx(0.0f));
+        REQUIRE(area_vec.z().base_value() == Approx(10.0f));
+    }
+
+    SECTION("Parallel vectors give zero") {
+        vec3<length_f> a = {1_m, 2_m, 3_m};
+        vec3<length_f> b = {2_m, 4_m, 6_m};
+        vec3<area_f> result = a.cross(b);
+
+        REQUIRE(result.x().base_value() == Approx(0.0f));
+        REQUIRE(result.y().base_value() == Approx(0.0f));
+        REQUIRE(result.z().base_value() == Approx(0.0f));
+    }
+
+    SECTION("Standard basis cross products") {
+        vec3<length_f> i = {1_m, 0_m, 0_m};
+        vec3<length_f> j = {0_m, 1_m, 0_m};
+        vec3<area_f> k = i.cross(j);
+
+        REQUIRE(k.x().base_value() == Approx(0.0f));
+        REQUIRE(k.y().base_value() == Approx(0.0f));
+        REQUIRE(k.z().base_value() == Approx(1.0f));
+    }
+}
+
+TEST_CASE("Vector component-wise multiplication (Hadamard)") {
+
+    SECTION("Multiply two length vectors") {
+        vec3<length_f> a = {2_m, 3_m, 4_m};
+        vec3<length_f> b = {5_m, 6_m, 7_m};
+        vec3<area_f> result = a * b;
+
+        REQUIRE(result.x().base_value() == Approx(10.0f));
+        REQUIRE(result.y().base_value() == Approx(18.0f));
+        REQUIRE(result.z().base_value() == Approx(28.0f));
+    }
+
+    SECTION("Triple multiplication for volume") {
+        vec3<length_f> dims = {2_m, 3_m, 4_m};
+        vec3<volume_f> volume_vec = dims * dims * dims;
+
+        REQUIRE(volume_vec.x().base_value() == Approx(8.0f));
+        REQUIRE(volume_vec.y().base_value() == Approx(27.0f));
+        REQUIRE(volume_vec.z().base_value() == Approx(64.0f));
+    }
+
+    SECTION("Component-wise division") {
+        vec3<length_f> a = {10_m, 20_m, 30_m};
+        vec3<length_f> b = {2_m, 4_m, 5_m};
+        auto result = a / b;
+
+        REQUIRE(result.x == Approx(5.0));
+        REQUIRE(result.y == Approx(5.0));
+        REQUIRE(result.z == Approx(6.0));
+    }
+}
+
+TEST_CASE("Vector magnitude and normalization") {
+
+    SECTION("Magnitude of length vector") {
+        vec3<length_f> a = {3_m, 4_m, 0_m};
+        length_f dist = a.length();
+
+        REQUIRE(dist.base_value() == Approx(5.0f));
+    }
+
+    SECTION("Magnitude of velocity") {
+        vec3<speed_f> velocity = {3_m_s, 4_m_s, 0_m_s};
+        speed_f speed = velocity.length();
+
+        REQUIRE(speed.base_value() == Approx(5.0f));
+    }
+
+    SECTION("Magnitude squared") {
+        vec3<length_f> a = {3_m, 4_m, 0_m};
+        area_f mag_sq = a.magnitude_squared();
+
+        REQUIRE(mag_sq.base_value() == Approx(25.0f));
+    }
+
+    SECTION("Normalized vector (unitless direction)") {
+        vec3<length_f> a = {3_m, 4_m, 0_m};
+        auto dir = a.normalized();
+
+        REQUIRE(dir.x == Approx(0.6));
+        REQUIRE(dir.y == Approx(0.8));
+        REQUIRE(dir.z == Approx(0.0));
+    }
+
+    SECTION("Normalized vector has magnitude 1") {
+        vec3<length_f> a = {5_m, 12_m, 0_m};
+        auto dir = a.normalized();
+
+        double mag = std::sqrt(dir.x * dir.x + dir.y * dir.y + dir.z * dir.z);
+        REQUIRE(mag == Approx(1.0));
+    }
+}
+
+TEST_CASE("Vector distance") {
+
+    SECTION("Distance between two points") {
+        vec3<length_f> a = {1_m, 2_m, 3_m};
+        vec3<length_f> b = {4_m, 6_m, 8_m};
+        length_f separation = a.distance(b);
+
+        // sqrt((4-1)^2 + (6-2)^2 + (8-3)^2) = sqrt(9 + 16 + 25) = sqrt(50)
+        // ≈ 7.071
+        REQUIRE(separation.base_value() == Approx(7.071f).margin(0.001f));
+    }
+
+    SECTION("Distance to same point is zero") {
+        vec3<length_f> a = {1_m, 2_m, 3_m};
+        length_f separation = a.distance(a);
+
+        REQUIRE(separation.base_value() == Approx(0.0f));
+    }
+}
+
+TEST_CASE("Vector comparison operators") {
+
+    SECTION("Equality") {
+        vec3<length_f> a = {1_m, 2_m, 3_m};
+        vec3<length_f> b = {1_m, 2_m, 3_m};
+
+        REQUIRE(a == b);
+    }
+
+    SECTION("Inequality") {
+        vec3<length_f> a = {1_m, 2_m, 3_m};
+        vec3<length_f> b = {4_m, 5_m, 6_m};
+
+        REQUIRE(a != b);
+    }
+}
+
+TEST_CASE("Vector component access") {
+
+    SECTION("Read components") {
+        vec3<length_f> v = {10_m, 20_m, 30_m};
+
+        REQUIRE(v.x().base_value() == Approx(10.0f));
+        REQUIRE(v.y().base_value() == Approx(20.0f));
+        REQUIRE(v.z().base_value() == Approx(30.0f));
+    }
+
+    SECTION("Array-style access") {
+        vec3<length_f> v = {1_m, 2_m, 3_m};
+
+        REQUIRE(v[0].base_value() == Approx(1.0f));
+        REQUIRE(v[1].base_value() == Approx(2.0f));
+        REQUIRE(v[2].base_value() == Approx(3.0f));
+    }
+}
+
+TEST_CASE("Vector raw data access") {
+
+    SECTION("Base value returns glm::vec") {
+        vec3<length_f> v = {10_m, 20_m, 30_m};
+        glm::vec3 raw = v.base_value();
+
+        REQUIRE(raw.x == Approx(10.0f));
+        REQUIRE(raw.y == Approx(20.0f));
+        REQUIRE(raw.z == Approx(30.0f));
+    }
+
+    SECTION("Data pointer access") {
+        vec3<length_f> v = {10_m, 20_m, 30_m};
+        const float *ptr = v.data_ptr();
+
+        REQUIRE(ptr[0] == Approx(10.0f));
+        REQUIRE(ptr[1] == Approx(20.0f));
+        REQUIRE(ptr[2] == Approx(30.0f));
+    }
+}
+
+TEST_CASE("2D vector specific operations") {
+
+    SECTION("2D construction") {
+        vec2<length_f> v(3_m, 4_m);
+
+        REQUIRE(v.x().base_value() == Approx(3.0f));
+        REQUIRE(v.y().base_value() == Approx(4.0f));
+    }
+
+    SECTION("2D magnitude") {
+        vec2<length_f> v(3_m, 4_m);
+        length_f mag = v.length();
+
+        REQUIRE(mag.base_value() == Approx(5.0f));
+    }
+
+    SECTION("2D addition") {
+        vec2<length_f> a(1_m, 2_m);
+        vec2<length_f> b(3_m, 4_m);
+        vec2<length_f> sum = a + b;
+
+        REQUIRE(sum.x().base_value() == Approx(4.0f));
+        REQUIRE(sum.y().base_value() == Approx(6.0f));
+    }
+
+    SECTION("2D dot product") {
+        vec2<length_f> a(3_m, 4_m);
+        vec2<length_f> b(5_m, 6_m);
+        area_f result = a.dot(b);
+
+        // 3*5 + 4*6 = 15 + 24 = 39
+        REQUIRE(result.base_value() == Approx(39.0f));
+    }
+}
+
+TEST_CASE("Physics simulation examples") {
+
+    SECTION("Projectile motion") {
+        vec3<length_f> initial_pos = {0_m, 10_m, 0_m};
+        vec3<speed_f> initial_vel = {5_m_s, 10_m_s, 0_m_s};
+        vec3<acceleration_f> gravity = {0_m_s2, -9.8_m_s2, 0_m_s2};
+        time_f dt = 0.1_s;
+
+        // Update velocity: v = v0 + at
+        vec3<speed_f> new_vel = initial_vel + gravity * dt;
+
+        REQUIRE(new_vel.x().base_value() == Approx(5.0f));
+        REQUIRE(new_vel.y().base_value() == Approx(9.02f));
+        REQUIRE(new_vel.z().base_value() == Approx(0.0f));
+
+        // Update position: s = s0 + vt
+        vec3<length_f> new_pos = initial_pos + initial_vel * dt;
+
+        REQUIRE(new_pos.x().base_value() == Approx(0.5f));
+        REQUIRE(new_pos.y().base_value() == Approx(11.0f));
+        REQUIRE(new_pos.z().base_value() == Approx(0.0f));
+    }
+
+    SECTION("Force and acceleration") {
+        mass_f m = 10_kg;
+        vec3<force_f> net_force = {100_N, 0_N, 0_N};
+        vec3<acceleration_f> accel = net_force / m;
+
+        REQUIRE(accel.x().base_value() == Approx(10.0f));
+        REQUIRE(accel.y().base_value() == Approx(0.0f));
+        REQUIRE(accel.z().base_value() == Approx(0.0f));
+    }
+
+    SECTION("Kinetic energy (work-energy theorem)") {
+        vec3<force_f> force = {50_N, 0_N, 0_N};
+        vec3<length_f> displacement = {10_m, 0_m, 0_m};
+        energy_f kinetic_energy = force.dot(displacement);
+
+        REQUIRE(kinetic_energy.base_value() == Approx(500.0f));
+    }
+}
